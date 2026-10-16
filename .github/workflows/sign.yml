@@ -15,9 +15,15 @@ jobs:
         with:
           node-version: "20"
       - name: Run sign
-        run: node sign.js
         env:
           TZ: Asia/Shanghai
           NETEASE_COOKIE: ${{ secrets.NETEASE_COOKIE }}
           DINGTALK_WEBHOOK: ${{ secrets.DINGTALK_WEBHOOK }}
           DINGTALK_SECRET: ${{ secrets.DINGTALK_SECRET }}
+        run: node sign.js 2>&1 | tee sign.log
+
+      - name: Push result to WeChat
+        if: always()
+        env:
+          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+        run: python3 pushplus_notify.py "网易云音乐每日签到" sign.log "${{ job.status }}"
